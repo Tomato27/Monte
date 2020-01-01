@@ -18,7 +18,7 @@ int main(void){
   int outH =256, outW=256;
   
   float*	projection=(float*)calloc(H, sizeof(float));	/** 投影画像用配列 **/
-  float*	projection3d=(float*)calloc(H*360, sizeof(float));
+  float*	projection3d=(float*)calloc(H*360, sizeof(float));/** 入力画像（マップ） **/
   float*	projection_w=(float*)calloc(H*360, sizeof(float));	/** 重み付け画像用配列 **/
   float*	projection_out=(float*)calloc(H * 360, sizeof(float));	/** 出力画像用配列 **/
   FILE	*fpi;	/** ファイルポインタ **/
@@ -44,7 +44,6 @@ for(int b = 0; b<360;b++){
   //step2 Ramp filterによる補正
   //rampf filter配列作成
 #if 1
-  //doubleに変更//////////////////////////////////////////////
   double* ramp =(double*)calloc(W*2 - 1, sizeof(double));
   ramp[H-1] = 0.25; //1/4を代入すると0が入る事に注意
 
@@ -59,21 +58,17 @@ for(int b = 0; b<360;b++){
     }
   }
 
-  for(int a = 0;a<H;a++){
-    //cout<<a<<" "<<ramp[a]<<" "<<128-a<<" "<<ramp[128-a]<<endl;
-  }
-
   //重畳積分
   float tmp1 = 0;
-  for(int d=0;d<360;d++){//縦移動
+  for(int d=0;d<360;d++){//縦(投影数)移動
     for(int b = 0; b<W; b++){//出力の注目画素
       double tmp = 0.;
       for(int c = 0; c<W; c++){//横にスライドしてそれぞれ掛けて足す
         tmp += projection_w[d * H + c]*0.5*ramp[H-1-b+c];
-        //if(a == 0 && c == 32){cout<< c <<" "<<64-b+c<<endl;}
+        
       }
       projection_out[d*H + b] = tmp;
-       //map[a*H + b]+=tmp;
+
       if(b == 32){
         tmp1 += projection_out[d*H + b]; 
       }
@@ -94,12 +89,11 @@ for(int b = 0; b<360;b++){
 for(int beta = 1; beta < beta_max; beta+=beta_span){//角度
     //光源をxz平面に関して1度ごと360方向回転させる
     float start_x = -160;
-    float start_y = 0;//?
+    float start_y = 0;
 
     double primary_x = start_x*cos(M_PI*beta/180) - start_y*sin(M_PI*beta/180);
     double primary_y = start_x*sin(M_PI*beta/180) + start_y*cos(M_PI*beta/180);
 
-    //25~29,34
       for(int t = 0; t < outH; t++){//高さ↑ y 15 to H-15
         for(int s = 0; s < outW; s++){//幅→ 右半分だけ再構成 x 32 to W
 
@@ -148,10 +142,9 @@ for(int beta = 1; beta < beta_max; beta+=beta_span){//角度
 
           //if((t-128)*(t-128)+(s-128)*(s-128)<=118*118){//380
             //球領域にのみ逆投影100
-            //dbetaをかける
-            //Dはオブジェクト中心 (pow(22.5,2)/pow(22.5 - d,2)) * 
-            double tmp_output = (pow(60,2)/pow(60 - d,2)) * projection_out[(beta)*H + index_y] * beta_span * 2 * M_PI/360;
-            //double((pow(22.5,2)/pow(22.5 - d,2)) * 
+            //dbetaを掛ける
+            //Dはオブジェクト中心 
+            double tmp_output = (pow(60,2)/pow(60 - d,2)) * projection_out[(beta)*H + index_y] * beta_span * 2 * M_PI/360; 
             image_xy[outH*t + s] += tmp_output*1.7;//(t-1)->t
           //}
        }
