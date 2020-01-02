@@ -23,7 +23,8 @@ int main(void){
   float*	projection_out=(float*)calloc(H * 360, sizeof(float));	/** 出力画像用配列 **/
   FILE	*fpi;	/** ファイルポインタ **/
 
-  //3あり画像か無しかは要確認
+  //縦切り画像を入力
+  //回転軸方向を合わせなければ上手くいかない事に注意
   fpi = fopen("map5_20_2e5.raw" , "rb");
   fread(projection3d, sizeof(float), 65*360, fpi);
 
