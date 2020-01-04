@@ -15,7 +15,6 @@ void writeRawFile(const char fname[], const size_t size, const size_t num, void*
 int main(void){
 
   int H=65,W=65,num_images=65;
-  //int H_out =37*5, W_out = 37*5 ,num_out = 65*5;
   int H_out = 256, W_out = 256 ,num_out = 256;
   int num_proj  = 360;
   
@@ -32,19 +31,13 @@ int main(void){
 
   float*	image_xy=(float*)calloc(H_out * W_out * num_out, sizeof(float));	/* 出力画像用配列 */
   float*	image_zy=(float*)calloc(H_out * W_out * num_out, sizeof(float));	/* 出力画像用配列 */
-  //34,29,202
-  //map[202*H*W + H*29 + 34] = -log(1) + log(20000);
 
   //step1 重み付け
   for(int num = 0; num < num_proj; num++){  
     for(int zeta = 0; zeta < H; zeta++){
       for(int p = 0; p < W; p++){
-        //dlで割る,map作成時点でこれはやっておきたい
         //Dso->Dsdに変更
-        //16.25->16.
-        map_w[H*W*num+ H*zeta + p] = map[H*W*num + H*zeta + p]*(60./sqrt(pow(60.,2)+pow(-1*(zeta*0.5)+16.25,2)+pow(((p*0.5)-16.25),2)));
-        //if(pow((zeta-32),2)+pow((p-32),2)<225){map_w[zeta*H + p]+=(22.5/sqrt(pow(22.5,2)+pow(-1*(zeta*0.5)+16.25,2)+pow((p*0.5)-16.25,2)))*1./0.5;}
-        //if(pow((zeta-32),2)+pow((p-32),2)<9){map_w[zeta*H + p]=(22.5/sqrt(pow(22.5,2)+pow(-1*(zeta*0.5)+16.25,2)+pow((p*0.5)-16.25,2)))*2./0.5;}
+        map_w[H*W*num+ H*zeta + p] = map[H*W*num + H*zeta + p]*(60./sqrt(pow(60.,2)+pow(-1*(zeta*0.5)+16.25,2)+pow(((p*0.5)-16.25),2)));  
       }
     } 
   }
@@ -66,12 +59,6 @@ int main(void){
     }
   }
 
-  for(int a = 0;a<H;a++){
-    //cout<<a<<" "<<ramp[a]<<" "<<128-a<<" "<<ramp[128-a]<<endl;
-  }
-
-  float tmp1 = 0;
-
   //重畳積分
   for(int num = 0; num<num_proj;num++){
     for(int d = 0; d<H; d++){
@@ -79,18 +66,11 @@ int main(void){
         float tmp = 0.;
         for(int c = 0; c<W; c++){
           tmp += map_w[num*H*W + c*H + d]*0.5*ramp[H-1-b+c];
-          //if(a == 0 && c == 32){cout<< c <<" "<<64-b+c<<endl;}
         }
         map_out[num*H*W + d*H + b] = tmp;
-        //map[a*H + b]+=tmp;
-      /*if(b == 32 && a==32){
-        tmp1 += map_out[num*H*W + a*H + b]; 
-      }*/
       }
     }
   }
-
-  cout<<tmp1<<" ";
 
   cout<<"filtered"<<endl;
 
@@ -104,7 +84,6 @@ for(int beta = 0; beta < beta_max; beta+=beta_span){//角度
     //光源をxz平面に関して1度ごと360方向回転させる
     float start_x = -160;
     float start_y = 0;//?
-    //float beta = 0;
     double primary_x = start_x*cos(M_PI*beta/180) - start_y*sin(M_PI*beta/180);
     double primary_y = start_x*sin(M_PI*beta/180) + start_y*cos(M_PI*beta/180);
 
@@ -135,7 +114,6 @@ for(int beta = 0; beta < beta_max; beta+=beta_span){//角度
           //ここが怪しそう
           //16.25, 23.25を小数点無しにずらした影響もありそう
           if(abs(photon_vec[1]) > 16.25 || abs(photon_vec[2]) > 16.25){
-            //cout<<"al";
             continue;
           }
           
@@ -164,8 +142,7 @@ for(int beta = 0; beta < beta_max; beta+=beta_span){//角度
           }
           //検出器より後ろの場合は再構成領域に加算しない
 
-          //if((z-128)*(z-128)+(t-128)*(t-128)+(s-128)*(s-128)<=118*118){//pixel単位
-            //cout<<" ;ipahlo";
+          if((z-128)*(z-128)+(t-128)*(t-128)+(s-128)*(s-128)<=118*118){//pixel単位
             //球領域にのみ逆投影100
             //dbetaをかける
             //Dはオブジェクト中心 (pow(22.5,2)/pow(22.5 - d,2)) *
@@ -182,7 +159,7 @@ for(int beta = 0; beta < beta_max; beta+=beta_span){//角度
             double output = (pow(60,2)/pow(60. - d,2)) * tmp_output * beta_span * 2 * M_PI/360;
             image_xy[H_out*W_out*z + W_out*t + s] += output*2.7;//(t-1)->t
             image_zy[H_out*W_out*s + W_out*t + z] += output*2.7;
-          //}
+          }
         }
       }
     }

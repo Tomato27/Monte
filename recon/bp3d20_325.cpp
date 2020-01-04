@@ -39,12 +39,8 @@ int main(void){
   for(int num = 0; num < num_proj; num++){  
     for(int zeta = 0; zeta < H; zeta++){
       for(int p = 0; p < W; p++){
-        //dlで割る,map作成時点でこれはやっておきたい
         //Dso->Dsdに変更
-        //16.25->16.
         map_w[H*W*num+ H*zeta + p] = map[H*W*num + H*zeta + p]*(60./sqrt(pow(60.,2)+pow(-1*(zeta*0.1)+16.25,2)+pow(((p*0.1)-16.25),2)));
-        //if(pow((zeta-32),2)+pow((p-32),2)<225){map_w[zeta*H + p]+=(22.5/sqrt(pow(22.5,2)+pow(-1*(zeta*0.5)+16.25,2)+pow((p*0.5)-16.25,2)))*1./0.5;}
-        //if(pow((zeta-32),2)+pow((p-32),2)<9){map_w[zeta*H + p]=(22.5/sqrt(pow(22.5,2)+pow(-1*(zeta*0.5)+16.25,2)+pow((p*0.5)-16.25,2)))*2./0.5;}
       }
     } 
   }
@@ -66,10 +62,6 @@ int main(void){
     }
   }
 
-  for(int a = 0;a<H;a++){
-    //cout<<a<<" "<<ramp[a]<<" "<<128-a<<" "<<ramp[128-a]<<endl;
-  }
-
   float tmp1 = 0;
 
   //重畳積分
@@ -82,13 +74,8 @@ int main(void){
             cout<<(H-1-b+c)<<" ";
           }
           tmp += map_w[num*H*W + c*H + d]*0.5*ramp[H-1-b+c];
-          //if(a == 0 && c == 32){cout<< c <<" "<<64-b+c<<endl;}
         }
         map_out[num*H*W + d*H + b] = tmp;
-        //map[a*H + b]+=tmp;
-      /*if(b == 32 && a==32){
-        tmp1 += map_out[num*H*W + a*H + b]; 
-      }*/
       }
     }
   }
@@ -144,7 +131,6 @@ for(int beta = 0; beta < beta_max; beta+=beta_span){//角度
           
 
           //検出器座標
-          //16.25->16
           double y = -1 * ((photon_vec[1]) * 10. - 325./2.);
           double x = -1 * (photon_vec[2] * 10. - 325./2.);
           int yi = int(y);
@@ -167,8 +153,6 @@ for(int beta = 0; beta < beta_max; beta+=beta_span){//角度
           }
           //検出器より後ろの場合は再構成領域に加算しない
 
-          //if((z-128)*(z-128)+(t-128)*(t-128)+(s-128)*(s-128)<=118*118){//pixel単位
-            //cout<<" ;ipahlo";
             //球領域にのみ逆投影100
             //dbetaをかける
             //Dはオブジェクト中心 (pow(22.5,2)/pow(22.5 - d,2)) *
@@ -185,7 +169,6 @@ for(int beta = 0; beta < beta_max; beta+=beta_span){//角度
             double output = (pow(60,2)/pow(60. - d,2)) * tmp_output * beta_span * 2 * M_PI/360;
             image_xy[H_out*W_out*z + W_out*t + s] += output*2.7*5;//(t-1)->t
             image_zy[H_out*W_out*s + W_out*t + z] += output*2.7*5;
-          //}
         }
       }
     }
