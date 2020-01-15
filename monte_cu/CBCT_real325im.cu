@@ -3,9 +3,7 @@
 #include <curand_kernel.h>
 #pragma comment(lib, "winmm.lib");
 
-//とりあえず単一エネルギー
-
-#define NUM 10000000 //発生光子数
+#define num_photon 10000 //発生光子数
 #define ScatterNUM 5 //散乱回数
 
 #define detector_x 65*5
@@ -17,13 +15,9 @@
 #define num_proj 360 
 #define diam 1.5*1.5
 
-#define geoH 200
-
-#define num_photon 10000
+#define geoH 200 //ジオメトリ画像の高さ
 
 using namespace std; 
-
-//円柱の太さ，長さ変えるのと投影方向の加味もすべし
 
 const char writeFileName0[] = "proj325_teth0pmma8etim2.raw";
 const char writeFileName_m0[] = "map325_teth0pmma8etim2.raw";
@@ -43,14 +37,11 @@ class csv
 {
 public:
   string fname;
-  //bool csv_get = false;
   csv(string filename, int sizex, int sizey);
 };
 csv::csv(string filename, int sizex, int sizey)
 {
   fname = filename;
-  //int sx=sizex;
-  //int sy=sizey;
 }
 
 class photon
@@ -66,7 +57,7 @@ public:
   __device__ void delta_sampling(float mu_H2O, float mu_Ca, float mu_PMMA ,unsigned char *geometry, float sin_theta_a, float cos_theta_a, float sin_phi_a, float cos_phi_a, curandStateMRG32k3a *st);
 };
 
-//void readXcom(const char* csv_c, float* ab, float* coh, float* com, float* mu);
+
 void readXcom();
 void readxray();
 void writeRawFile(const char fname[], const size_t size, const size_t num, void *image);
@@ -77,9 +68,8 @@ __global__ void projection(int per, float mu_H2O, float mu_Ca, float mu_PMMA ,un
                           float *ab_Ca, float *coh_Ca, float *com_Ca, float *mua_Ca, 
                           float *ab_PMMA, float *coh_PMMA, float *com_PMMA, float *mua_PMMA,
                           float *al10mm);
-//後で散乱を足して，csv_H2Oを渡すように変える
+
 __global__ void LaunchPhoton(curandStateMRG32k3a *state, int seed);
-//__device__ void delta_sampling(photon p_gpu, float mu_H2O, float mu_Ca, unsigned char* geometry, float sin_theta_a, float cos_theta_a, float sin_phi_a, float cos_phi_a,curandStateMRG32k3a* state_gpu);
 __global__ void RandStateGenerator(curandStateMRG32k3a *state_gpu);
 void add_result(photon *p, float phi, int *image, int *es, int count, int ditector_index, int Energy, int a, int q);
 
@@ -92,9 +82,6 @@ float al10mm[251];
 
 int main(void)
 {
-  //cout<<"joxl";
-
-  //int H=65,W=65,num_images=65 ,num_proj = 360;
 
   unsigned char *geometry = (unsigned char *)calloc(geoH * geoH * geoH, sizeof(unsigned char)); /** 原画像用配列 **/
   unsigned char *geometry_gpu;
@@ -103,15 +90,11 @@ int main(void)
 
   fpi = fopen(geo_name, "rb");
   fread(geometry, sizeof(unsigned char), geoH * geoH * geoH, fpi); //phantomは0.1cm間隔
-  /*for(int w=0;w<200*200;w++){
-    cout<<int(geometry[w]);
-  }*/
 
   cudaMalloc((void **)&geometry_gpu, sizeof(unsigned char) * geoH * geoH * geoH);
   cudaMemcpy(geometry_gpu, geometry, sizeof(unsigned char) * geoH * geoH * geoH, cudaMemcpyHostToDevice);
 
   fclose(fpi);
-  //int count_o9=0;
 
   int *image0 = (int *)calloc(detector_x * detector_y * 1 * num_proj, sizeof(int));     //処理用画像65*65
   int *image_out0 = (int *)calloc(detector_x * detector_y * 1 * num_proj, sizeof(int)); //処理用画像65*65
@@ -127,16 +110,11 @@ int main(void)
   cudaMalloc((void **)&image_gpu5, sizeof(int) * detector_y * detector_x * num_proj);
   cudaMemcpy(image_gpu5, image5, sizeof(int) * detector_y * detector_x * num_proj, cudaMemcpyHostToDevice);
 
-  //int i,
   int count = 0;
   int start_keV = 140, end_keV = 140;
   float dens_H2O = 1.0; //水の密度i
   float dens_Ca = 1.550;
   float dens_PMMA = 1.18;
-
-  /*線減衰係数の値をmuに代入*/
-  /*int sizex = 4; //線減衰係数配列のインデックス
-  int sizey = 200;*/
 
   readXcom();
   readxray();
@@ -200,9 +178,6 @@ int main(void)
 
   cudaMalloc((void **)&al10mm_gpu, sizeof(float) * 251);
   cudaMemcpy(al10mm_gpu, al10mm, sizeof(float) * 251, cudaMemcpyHostToDevice);
-
-  //int keV=140;
-  //min_e=start_keV;
 
   int per = num_photon;
 
