@@ -9,7 +9,7 @@ Geometry of simulation is as fig.
 
 ## monte_cu
 
-MonteCalro simulation of photon tracking for CBCT writen in CUDA
+MonteCalro simulation of photon tracking for CBCT writen in CUDA.
 
 ## reconstruction
-FBP/FDK reconstruction programs for CT/CBCT
+FBP/FDK reconstruction programs for CT/CBCT.
