@@ -1,5 +1,5 @@
 # Monte
-MonteCarlo simulation code for radiation transport of CBCT written in C++/CUDA.
+MonteCarlo simulation code for radiation transport of CT/CBCT written in C++/CUDA.
 
 ## monte_cpp
 MonteCalro simulation of photon tracking for CBCT writen in C++
