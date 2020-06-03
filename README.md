@@ -12,4 +12,4 @@ Geometry of simulation is as figure.
 MonteCalro simulation of photon tracking for CBCT writen in CUDA.
 
 ## reconstruction
-FBP/FDK reconstruction programs for CT/CBCT.
+FBP reconstruction programs for CT and FDK programs for CBCT.
